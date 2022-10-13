@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.IO.Ports;
 using System.Net.Sockets;
+using static MAVLink;
 
 namespace CSharpDroneLib
 {
@@ -43,7 +44,7 @@ namespace CSharpDroneLib
             throw new NotImplementedException();
         }
 
-        void IDrone.ReadPackage(object sender, EventArgs e)
+        void ReadPackage(object sender, EventArgs e)
         {
 
             switch ((int)TypeConnect)
@@ -97,13 +98,20 @@ namespace CSharpDroneLib
 
                             Console.WriteLine(packet.msgtypename);
 
+                            //ALT E PITCH
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.ATTITUDE)
-                            //or
-                            //if (packet.data.GetType() == typeof(MAVLink.mavlink_attitude_t))
                             {
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
+                                //att.roll, att.pitch, att.yaw.
                                 Console.WriteLine(att.pitch * 57.2958 + " " + att.roll * 57.2958);
+                            }
+
+                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.BATTERY_STATUS)
+                            {
+                                var att = (MAVLink.mavlink_battery_status_t)packet.data;
+
+                                Console.WriteLine(att.current_battery);
                             }
                         }
                         catch
@@ -265,7 +273,7 @@ namespace CSharpDroneLib
                     if (packet == null || sysid != packet.sysid || compid != packet.compid)
                         continue;
 
-                    Console.WriteLine(packet);
+                    Console.WriteLine(packet);                    
 
 
                     if (packet.data.GetType() == typeof(T))
@@ -338,6 +346,26 @@ namespace CSharpDroneLib
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
                                 Console.WriteLine(att.pitch * 57.2958 + " " + att.roll * 57.2958);
+                            }
+
+                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.BATTERY_STATUS)
+                            {
+                                var att = (MAVLink.mavlink_battery_status_t)packet.data;
+
+                                Console.WriteLine(att.battery_remaining);
+                            }
+                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.GPS_RAW_INT)
+                            {
+                                var att = (MAVLink.mavlink_gps_raw_int_t)packet.data;
+
+                                Console.WriteLine(att.lat + " "+att.lon + " "+ att.alt+ " " + att.yaw);
+                            }
+                            
+                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.SET_MODE)
+                            {
+                                var att = (MAVLink.mavlink_set_mode_t)packet.data;
+
+                                Console.WriteLine(att.base_mode);
                             }
                         }
                         catch
@@ -606,13 +634,13 @@ namespace CSharpDroneLib
             }
         }
 
-        public void Connect(int port, int baudRate, EnConnectionType TypeConnect, string ip)
+        public void Connect(int port, int baudRate, EnConnectionType conType, string ip)
         {
             if (ip == null || ip == "")
             {
                 ip = "127.0.0.1";
             }
-            switch ((int)TypeConnect)
+            switch ((int)conType)
             {
                 case 1:
                     log = LogManager.GetLogger(typeof(UdpSerial));

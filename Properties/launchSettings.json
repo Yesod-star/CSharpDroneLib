@@ -1,7 +1,8 @@
 {
   "profiles": {
     "CSharpDroneLib": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\Yesod\\Desktop\\TCC\\CSharpDroneLib"
     },
     "Profile 1": {
       "commandName": "Executable",
