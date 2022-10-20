@@ -2,9 +2,6 @@ using System;
 
 public interface IDrone
 {
-    public IDroneState DroneState { get; set; }  
-    void SetDroneState();
-    void GetDroneState();
 
     void TakeOff(int altitude);
     void Land();

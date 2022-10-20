@@ -13,10 +13,6 @@ namespace SimpleExample
         static int port;
         static int frequency;
         static string connection;
-        static string mode1;
-        static int alt;
-        static int coord1;
-        static int coord2;
 
         /// <summary>
         /// The main entry point for the application.
@@ -39,12 +35,24 @@ namespace SimpleExample
             DroneAct.Arm();
             Console.WriteLine("Enter to enter flight mode:");
             Console.ReadLine();
-            DroneAct.SetFlightMode((EnFlightMode)3);
+            DroneAct.SetFlightMode((EnFlightMode)4);
+            Console.ReadLine();
             Console.WriteLine("Type height for flight:");
             DroneAct.TakeOff(80);
             Console.ReadLine();
-
-        }
-
+            DroneAct.getDroneState();
+            Console.ReadLine();
+            DroneAct.SetFlightMode((EnFlightMode)5);
+            Console.ReadLine();            
+            DroneAct.GoToWaypoint((float)-35.2624, (float)149.1640, 60);
+            Console.ReadLine();
+            DroneAct.Land();
+            Console.ReadLine();
+            DroneAct.Disarm();
+            Console.ReadLine();
+            DroneAct.Disconnect();
+            Console.ReadLine();
     }
+
+  }
 }

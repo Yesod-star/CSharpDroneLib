@@ -8,7 +8,7 @@ using static MAVLink;
 
 namespace CSharpDroneLib
 {
-    public class Drone : IDrone
+    public class Drone : IDrone, IDroneState
     {
         MAVLink.MavlinkParse mavlink = new MAVLink.MavlinkParse();
         bool armed = false;
@@ -30,19 +30,17 @@ namespace CSharpDroneLib
         int stateArm = 0;
         private ILog log = LogManager.GetLogger(typeof(TcpSerial));
 
-        public IDroneState DroneState { 
-            get => throw new NotImplementedException(); set => throw new NotImplementedException(); 
-        }
-
-        public void GetDroneState()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetDroneState()
-        {
-            throw new NotImplementedException();
-        }
+        public EnFlightMode FlightMode { get; set; }
+        public float Altitude { get; set; }
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
+        public float Roll { get; set; }
+        public float Pitch { get; set; }
+        public float Yaw { get; set; }
+        public float BatteryLevel { get; set; }
+        public float Rollspeed { get; set; }
+        public float Yawspeed { get; set; }
+        public float Pitchspeed { get; set; }
 
         void ReadPackage(object sender, EventArgs e)
         {
@@ -57,25 +55,20 @@ namespace CSharpDroneLib
                             MAVLink.MAVLinkMessage packet;
                             lock (readlock)
                             {
-                                // read any valid packet from the port
                                 packet = mavlink.ReadPacket(UdpSerialConnect1.BaseStream);
 
-                                // check its valid
                                 if (packet == null || packet.data == null)
                                     continue;
                             }
 
-                            // check to see if its a hb packet from the comport
                             if (packet.data.GetType() == typeof(MAVLink.mavlink_heartbeat_t))
                             {
                                 var hb = (MAVLink.mavlink_heartbeat_t)packet.data;
 
-                                // save the sysid and compid of the seen MAV
                                 sysid = packet.sysid;
                                 compid = packet.compid;
 
-                                // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -87,32 +80,23 @@ namespace CSharpDroneLib
 
                                 UdpSerialConnect1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 UdpSerialConnect1.Write(buffer, 0, buffer.Length);
                             }
 
-                            // from here we should check the the message is addressed to us
                             if (sysid != packet.sysid || compid != packet.compid)
                                 continue;
 
                             Console.WriteLine(packet.msgtypename);
 
-                            //ALT E PITCH
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.ATTITUDE)
                             {
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
-                                //att.roll, att.pitch, att.yaw.
                                 Console.WriteLine(att.pitch * 57.2958 + " " + att.roll * 57.2958);
                             }
 
-                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.BATTERY_STATUS)
-                            {
-                                var att = (MAVLink.mavlink_battery_status_t)packet.data;
-
-                                Console.WriteLine(att.current_battery);
-                            }
                         }
                         catch
                         {
@@ -129,25 +113,20 @@ namespace CSharpDroneLib
                             MAVLink.MAVLinkMessage packet;
                             lock (readlock)
                             {
-                                // read any valid packet from the port
                                 packet = mavlink.ReadPacket(TcpSerialConnect1.BaseStream);
 
-                                // check its valid
                                 if (packet == null || packet.data == null)
                                     continue;
                             }
 
-                            // check to see if its a hb packet from the comport
                             if (packet.data.GetType() == typeof(MAVLink.mavlink_heartbeat_t))
                             {
                                 var hb = (MAVLink.mavlink_heartbeat_t)packet.data;
 
-                                // save the sysid and compid of the seen MAV
                                 sysid = packet.sysid;
                                 compid = packet.compid;
 
-                                // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -159,20 +138,17 @@ namespace CSharpDroneLib
 
                                 TcpSerialConnect1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 TcpSerialConnect1.Write(buffer, 0, buffer.Length);
                             }
 
-                            // from here we should check the the message is addressed to us
                             if (sysid != packet.sysid || compid != packet.compid)
                                 continue;
 
                             Console.WriteLine(packet.msgtypename);
 
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.ATTITUDE)
-                            //or
-                            //if (packet.data.GetType() == typeof(MAVLink.mavlink_attitude_t))
                             {
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
@@ -194,25 +170,20 @@ namespace CSharpDroneLib
                             MAVLink.MAVLinkMessage packet;
                             lock (readlock)
                             {
-                                // read any valid packet from the port
                                 packet = mavlink.ReadPacket(serialPort1.BaseStream);
 
-                                // check its valid
                                 if (packet == null || packet.data == null)
                                     continue;
                             }
 
-                            // check to see if its a hb packet from the comport
                             if (packet.data.GetType() == typeof(MAVLink.mavlink_heartbeat_t))
                             {
                                 var hb = (MAVLink.mavlink_heartbeat_t)packet.data;
 
-                                // save the sysid and compid of the seen MAV
                                 sysid = packet.sysid;
                                 compid = packet.compid;
 
-                                // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -224,20 +195,17 @@ namespace CSharpDroneLib
 
                                 serialPort1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 serialPort1.Write(buffer, 0, buffer.Length);
                             }
 
-                            // from here we should check the the message is addressed to us
                             if (sysid != packet.sysid || compid != packet.compid)
                                 continue;
 
                             Console.WriteLine(packet.msgtypename);
 
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.ATTITUDE)
-                            //or
-                            //if (packet.data.GetType() == typeof(MAVLink.mavlink_attitude_t))
                             {
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
@@ -264,12 +232,10 @@ namespace CSharpDroneLib
 
             lock (readlock)
             {
-                // read the current buffered bytes
                 while (DateTime.Now < deadline)
                 {
                     var packet = mavlink.ReadPacket(UdpSerialConnect1.BaseStream);
 
-                    // check its not null, and its addressed to us
                     if (packet == null || sysid != packet.sysid || compid != packet.compid)
                         continue;
 
@@ -298,25 +264,20 @@ namespace CSharpDroneLib
                             MAVLink.MAVLinkMessage packet;
                             lock (readlock)
                             {
-                                // read any valid packet from the port
                                 packet = mavlink.ReadPacket(UdpSerialConnect1.BaseStream);
 
-                                // check its valid
                                 if (packet == null || packet.data == null)
                                     continue;
                             }
 
-                            // check to see if its a hb packet from the comport
                             if (packet.data.GetType() == typeof(MAVLink.mavlink_heartbeat_t))
                             {
                                 var hb = (MAVLink.mavlink_heartbeat_t)packet.data;
 
-                                // save the sysid and compid of the seen MAV
                                 sysid = packet.sysid;
                                 compid = packet.compid;
 
-                                // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -328,45 +289,44 @@ namespace CSharpDroneLib
 
                                 UdpSerialConnect1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 UdpSerialConnect1.Write(buffer, 0, buffer.Length);
                             }
 
-                            // from here we should check the the message is addressed to us
                             if (sysid != packet.sysid || compid != packet.compid)
                                 continue;
 
-                            Console.WriteLine(packet.msgtypename);
 
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.ATTITUDE)
-                            //or
-                            //if (packet.data.GetType() == typeof(MAVLink.mavlink_attitude_t))
                             {
                                 var att = (MAVLink.mavlink_attitude_t)packet.data;
 
-                                Console.WriteLine(att.pitch * 57.2958 + " " + att.roll * 57.2958);
+                                Pitch = att.pitch;
+                                Roll = att.roll;
+                                Yaw = att.yaw;
+                                Rollspeed = att.rollspeed;
+                                Pitchspeed = att.pitchspeed;
+                                Yawspeed = att.yawspeed;
                             }
 
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.BATTERY_STATUS)
                             {
                                 var att = (MAVLink.mavlink_battery_status_t)packet.data;
 
-                                Console.WriteLine(att.battery_remaining);
+
+                                BatteryLevel = att.battery_remaining;
                             }
                             if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.GPS_RAW_INT)
                             {
                                 var att = (MAVLink.mavlink_gps_raw_int_t)packet.data;
 
-                                Console.WriteLine(att.lat + " "+att.lon + " "+ att.alt+ " " + att.yaw);
+                                
+                                Altitude = att.alt;
+                                Latitude = att.lat;
+                                Longitude = att.lon; 
                             }
                             
-                            if (packet.msgid == (byte)MAVLink.MAVLINK_MSG_ID.SET_MODE)
-                            {
-                                var att = (MAVLink.mavlink_set_mode_t)packet.data;
-
-                                Console.WriteLine(att.base_mode);
-                            }
                         }
                         catch
                         {
@@ -401,7 +361,7 @@ namespace CSharpDroneLib
                                 compid = packet.compid;
 
                                 // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -413,7 +373,7 @@ namespace CSharpDroneLib
 
                                 TcpSerialConnect1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 TcpSerialConnect1.Write(buffer, 0, buffer.Length);
                             }
@@ -466,7 +426,7 @@ namespace CSharpDroneLib
                                 compid = packet.compid;
 
                                 // request streams at 2 hz
-                                var buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
+                                var buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
                                     new MAVLink.mavlink_request_data_stream_t()
                                     {
                                         req_message_rate = 2,
@@ -478,7 +438,7 @@ namespace CSharpDroneLib
 
                                 serialPort1.Write(buffer, 0, buffer.Length);
 
-                                buffer = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
+                                buffer = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, hb);
 
                                 serialPort1.Write(buffer, 0, buffer.Length);
                             }
@@ -516,11 +476,9 @@ namespace CSharpDroneLib
         {
             if (stateArm == 0)
             {
-                //Variavel para armazenar o comando
                 MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
 
-                //Geracao do comando
                 req.target_system = 1;
                 req.target_component = 1;
 
@@ -532,21 +490,17 @@ namespace CSharpDroneLib
 
 
 
-                //Armazenamento do comando
-                byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+                byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
                 switch ((int)TypeConnect)
                 {
                     case 1:
-                        //Envio do comando
                         UdpSerialConnect1.Write(packet, 0, packet.Length);
                         break;
                     case 2:
-                        //Envio do comando
                         TcpSerialConnect1.Write(packet, 0, packet.Length);
                         break;
                     case 3:
-                        //Envio do comando
                         serialPort1.Write(packet, 0, packet.Length);
                         break;
                     default:
@@ -555,7 +509,6 @@ namespace CSharpDroneLib
                 }
 
 
-                //Ver se esta sendo aceito o comando
                 try
                 {
                     var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
@@ -579,11 +532,9 @@ namespace CSharpDroneLib
             {
                 if (stateArm == 0)
                 {
-                    //Variavel para armazenar o comando
                     MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
 
-                    //Geracao do comando
                     req.target_system = 1;
                     req.target_component = 1;
 
@@ -595,21 +546,17 @@ namespace CSharpDroneLib
 
 
 
-                    //Armazenamento do comando
-                    byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+                    byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
                     switch ((int)TypeConnect)
                     {
                         case 1:
-                            //Envio do comando
                             UdpSerialConnect1.Write(packet, 0, packet.Length);
                             break;
                         case 2:
-                            //Envio do comando
                             TcpSerialConnect1.Write(packet, 0, packet.Length);
                             break;
                         case 3:
-                            //Envio do comando
                             serialPort1.Write(packet, 0, packet.Length);
                             break;
                         default:
@@ -618,7 +565,6 @@ namespace CSharpDroneLib
                     }
 
 
-                    //Ver se esta sendo aceito o comando
                     try
                     {
                         var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
@@ -656,12 +602,9 @@ namespace CSharpDroneLib
                     }
 
 
-                    // set the comport options
                     UdpSerialConnect1.PortName = "UDP" + port;
                     UdpSerialConnect1.BaudRate = baudRate;
-                    // open the comport
                     UdpSerialConnect1.Open();
-                    // set timeout to 2 seconds
                     UdpSerialConnect1.ReadTimeout = 2000;
                     break;
                 case 2:
@@ -670,7 +613,6 @@ namespace CSharpDroneLib
                     TcpSerialConnect1.Port = "" + port;
                     TcpSerialConnect1.client = new TcpClient(ip, port);
 
-                    //if the port is open close it
                     if (TcpSerialConnect1.IsOpen)
                     {
                         TcpSerialConnect1.Close();
@@ -678,32 +620,25 @@ namespace CSharpDroneLib
                     }
 
 
-                    // set the comport options
                     TcpSerialConnect1.PortName = "TCP" + port;
                     TcpSerialConnect1.BaudRate = baudRate;
-                    // open the comport
                     TcpSerialConnect1.Open();
-                    // set timeout to 2 seconds
                     TcpSerialConnect1.ReadTimeout = 2000;
                     break;
                 case 3:
                     log = LogManager.GetLogger(typeof(SerialPort));
                     TypeConnect = (EnConnectionType)3;
-                    // if the port is open close it
                     if (serialPort1.IsOpen)
                     {
                         serialPort1.Close();
                         return;
                     }
 
-                    // set the comport options
                     serialPort1.PortName = "COM" + port;
                     serialPort1.BaudRate = baudRate;
 
-                    // open the comport
                     serialPort1.Open();
 
-                    // set timeout to 2 seconds
                     serialPort1.ReadTimeout = 2000;
 
                     break;
@@ -769,7 +704,6 @@ namespace CSharpDroneLib
         {
             MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
-            //Geracao do comando
             req.target_system = 255;
             req.target_component = 190;
 
@@ -778,21 +712,17 @@ namespace CSharpDroneLib
             req.param6 = longitude;
             req.param7 = altitude;
 
-            //Armazenamento do comando
-            byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+            byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
             switch ((int)TypeConnect)
             {
                 case 1:
-                    //Envio do comando
                     UdpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 2:
-                    //Envio do comando
                     TcpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 3:
-                    //Envio do comando
                     serialPort1.Write(packet, 0, packet.Length);
                     break;
                 default:
@@ -800,7 +730,6 @@ namespace CSharpDroneLib
                     break;
             }
 
-            //Ver se esta sendo aceito o comando
             try
             {
                 var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
@@ -818,27 +747,22 @@ namespace CSharpDroneLib
         {
             MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
-            //Geracao do comando
             req.target_system = 1;
             req.target_component = 1;
 
             req.command = (ushort)MAVLink.MAV_CMD.LAND;
 
-            //Armazenamento do comando
-            byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+            byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
             switch ((int)TypeConnect)
             {
                 case 1:
-                    //Envio do comando
                     UdpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 2:
-                    //Envio do comando
                     TcpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 3:
-                    //Envio do comando
                     serialPort1.Write(packet, 0, packet.Length);
                     break;
                 default:
@@ -846,7 +770,6 @@ namespace CSharpDroneLib
                     break;
             }
 
-            //Ver se esta sendo aceito o comando
             try
             {
                 var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
@@ -864,34 +787,23 @@ namespace CSharpDroneLib
         {
             MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
-            //Geracao do comando
             req.target_system = 1;
             req.target_component = 1;
 
             req.command = (ushort)MAVLink.MAV_CMD.TAKEOFF;
-            req.param1 = 0;
-            req.param2 = 0;
-            req.param3 = 0;
-            req.param4 = 0;
-            req.param5 = 0;
-            req.param6 = 0;
-            req.param7 = 75;
+            req.param7 = (float) altitude;
 
-            //Armazenamento do comando
-            byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+            byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
             switch ((int)TypeConnect)
             {
                 case 1:
-                    //Envio do comando
                     UdpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 2:
-                    //Envio do comando
                     TcpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 3:
-                    //Envio do comando
                     serialPort1.Write(packet, 0, packet.Length);
                     break;
                 default:
@@ -899,7 +811,6 @@ namespace CSharpDroneLib
                     break;
             }
 
-            //Ver se esta sendo aceito o comando
             try
             {
                 var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
@@ -915,10 +826,8 @@ namespace CSharpDroneLib
 
         public void SetFlightMode(EnFlightMode flightMode)
         {
-            //Variavel para armazenar o comando
             MAVLink.mavlink_command_long_t req = new MAVLink.mavlink_command_long_t();
 
-            //Geracao do comando
             req.target_system = 1;
             req.target_component = 1;
 
@@ -958,21 +867,17 @@ namespace CSharpDroneLib
                     break;
             }
 
-            //Armazenamento do comando
-            byte[] packet = mavlink.GenerateMAVLinkPacket10(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
+            byte[] packet = mavlink.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, req);
 
             switch ((int)TypeConnect)
             {
                 case 1:
-                    //Envio do comando
                     UdpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 2:
-                    //Envio do comando
                     TcpSerialConnect1.Write(packet, 0, packet.Length);
                     break;
                 case 3:
-                    //Envio do comando
                     serialPort1.Write(packet, 0, packet.Length);
                     break;
                 default:
@@ -980,18 +885,33 @@ namespace CSharpDroneLib
                     break;
             }
 
-            //Ver se esta sendo aceito o comando
             try
             {
                 var ack = readsomedata<MAVLink.mavlink_command_ack_t>(sysid, compid);
                 if (ack.result == (byte)MAVLink.MAV_RESULT.ACCEPTED)
                 {
-
+                    FlightMode = flightMode;
                 }
             }
             catch
             {
             }
+        }
+
+        public void getDroneState()
+        {
+            Console.WriteLine("Flight Mode: " + FlightMode   + "\n" +
+                              "Altitude:    " + Altitude     + "\n" +
+                              "Latitude:    " + Latitude     + "\n" +
+                              "Longitude:   " + Longitude    + "\n" +
+                              "BatteryLevel:" + BatteryLevel + "\n" +
+                              "Rollspeed:   " + Rollspeed    + "\n" +
+                              "Pitchspeed:  " + Pitchspeed   + "\n" +
+                              "Yawspeed:    " + Yawspeed     + "\n" +
+                              "Roll:        " + Roll         + "\n" +
+                              "Pitch:       " + Pitch        + "\n" +
+                              "Yaw:         " + Yaw          + "\n" +
+                              "Pitchspeed:  " + Pitchspeed   + "\n");
         }
 
     }
