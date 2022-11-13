@@ -3,10 +3,6 @@
     "CSharpDroneLib": {
       "commandName": "Project",
       "workingDirectory": "C:\\Users\\Yesod\\Desktop\\TCC\\CSharpDroneLib"
-    },
-    "Profile 1": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Users\\Yesod\\Desktop\\TCC\\CSharpDroneLib\\Startup.cs"
     }
   }
 }

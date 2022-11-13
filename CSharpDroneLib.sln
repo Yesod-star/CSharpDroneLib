@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpDroneLib", "CSharpDroneLib.csproj", "{D4ECC9DC-EFED-4A14-AC0F-CCEE41A3C64A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debug", "..\Debug\Debug.csproj", "{F2C9B2A4-9EED-440E-AFDA-192298293A0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D4ECC9DC-EFED-4A14-AC0F-CCEE41A3C64A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4ECC9DC-EFED-4A14-AC0F-CCEE41A3C64A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4ECC9DC-EFED-4A14-AC0F-CCEE41A3C64A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2C9B2A4-9EED-440E-AFDA-192298293A0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2C9B2A4-9EED-440E-AFDA-192298293A0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2C9B2A4-9EED-440E-AFDA-192298293A0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2C9B2A4-9EED-440E-AFDA-192298293A0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
