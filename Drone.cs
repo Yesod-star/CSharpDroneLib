@@ -517,8 +517,9 @@ namespace CSharpDroneLib
                         stateArm = 1;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine("An error occurred while reading data: " + ex.Message);
                 }
             }
             else
@@ -573,8 +574,10 @@ namespace CSharpDroneLib
                             stateArm = 0;
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine("An error occurred while reading data: " + ex.Message);
+                        // You can choose to log the error, notify the user, or perform any other appropriate action here.
                     }
                 }
             }
@@ -738,8 +741,10 @@ namespace CSharpDroneLib
 
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("An error occurred while reading data: " + ex.Message);
+                // You can choose to log the error, notify the user, or perform any other appropriate action here.
             }
         }
 
@@ -778,8 +783,10 @@ namespace CSharpDroneLib
 
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("An error occurred while reading data: " + ex.Message);
+                // You can choose to log the error, notify the user, or perform any other appropriate action here.
             }
         }
 
@@ -819,8 +826,10 @@ namespace CSharpDroneLib
 
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("An error occurred while reading data: " + ex.Message);
+                // You can choose to log the error, notify the user, or perform any other appropriate action here.
             }
         }
 
@@ -893,8 +902,10 @@ namespace CSharpDroneLib
                     FlightMode = flightMode;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("An error occurred while reading data: " + ex.Message);
+                // You can choose to log the error, notify the user, or perform any other appropriate action here.
             }
         }
 
